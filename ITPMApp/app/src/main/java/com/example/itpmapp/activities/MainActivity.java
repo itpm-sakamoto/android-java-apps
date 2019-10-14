@@ -31,12 +31,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        // 1.ListViewをレイアウトファイルから読み込む。
         mListView = findViewById(R.id.main_list);
 
-        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        // 2.Adapterを作成する。
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
 
+        // 3.ListViewにAdapterをセットする。
         mListView.setAdapter(mAdapter);
+
+        // 通常のクリックリスナーのセット
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -46,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 長押しでのクリックリスナーのセット
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -76,9 +81,14 @@ public class MainActivity extends AppCompatActivity {
      * リスト表示用メソッド
      */
     private void displayDataList() {
+        // 1.アダプター内のデータをリセットする（クリアにする）
         mAdapter.clear();
+
+        // 2.新しいデータをアダプターに設定する（セットする）
         List<String> dataList = Arrays.asList("ホーム", "事業内容", "企業情報", "採用情報", "お問い合わせ");
         mAdapter.addAll(dataList);
+
+        // 3.アダプターにデータが変更されたことを教えてあげる（通知する）
         mAdapter.notifyDataSetChanged();
     }
 }
