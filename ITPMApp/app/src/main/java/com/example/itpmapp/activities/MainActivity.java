@@ -2,9 +2,12 @@ package com.example.itpmapp.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import com.example.itpmapp.R;
+import com.example.itpmapp.databases.ITPMDataOpenHelper;
 import com.example.itpmapp.pojo.TitleDataItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -30,7 +33,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private ListView mListView;
-//    private ArrayAdapter<String> mAdapter;
     private MainListAdapter mAdapter;
 
     @Override
@@ -43,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         mListView = findViewById(R.id.main_list);
 
         // 2.Adapterを作成する。
-//        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
         mAdapter = new MainListAdapter(this, R.layout.layout_title_item, new ArrayList<TitleDataItem>());
 
         // 3.ListViewにAdapterをセットする。
@@ -55,8 +56,6 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 TitleDataItem item = (TitleDataItem)adapterView.getItemAtPosition(position);
                 Intent intent = EditActivity.createIntent(MainActivity.this, item.getTitle());
-//                String title = String.valueOf(adapterView.getItemAtPosition(position));
-//                Intent intent = EditActivity.createIntent(MainActivity.this, title);
                 startActivity(intent);
             }
         });
@@ -67,11 +66,8 @@ public class MainActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
                 TitleDataItem item = (TitleDataItem)adapterView.getItemAtPosition(position);
                 mAdapter.remove(item);
-//                String title = String.valueOf(adapterView.getItemAtPosition(position));
-//                mAdapter.remove(title);
                 Toast.makeText(MainActivity.this, item.getTitle() + "を削除しました。", Toast.LENGTH_SHORT).show();
                 return true;
-//                return false;
             }
         });
 
@@ -97,17 +93,29 @@ public class MainActivity extends AppCompatActivity {
     private void displayDataList() {
         // 1.アダプター内のデータをリセットする（クリアにする）
         mAdapter.clear();
+        List<TitleDataItem> itemList = new ArrayList<>();
+        SQLiteDatabase db = new ITPMDataOpenHelper(this).getReadableDatabase();
+        db.beginTransaction();
+        try (Cursor cursor = db.query(ITPMDataOpenHelper.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null))
+        {
+            while (cursor.moveToNext()) {
+                int id = cursor.getInt(cursor.getColumnIndex(ITPMDataOpenHelper._ID));
+                String title = cursor.getString(cursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
+                TitleDataItem item = new TitleDataItem(id, title);
+                itemList.add(item);
+            }
+         } finally {
+            db.endTransaction();
+        }
 
         // 2.新しいデータをアダプターに設定する（セットする）
-//        List<String> dataList = Arrays.asList("ホーム", "事業内容", "企業情報", "採用情報", "お問い合わせ");
-        List<TitleDataItem> dataList = Arrays.asList(
-                new TitleDataItem(1, "ホーム"),
-                new TitleDataItem(2, "事業内容"),
-                new TitleDataItem(3, "企業情報"),
-                new TitleDataItem(4, "採用情報"),
-                new TitleDataItem(5, "お問い合わせ")
-        );
-        mAdapter.addAll(dataList);
+        mAdapter.addAll(itemList);
 
         // 3.アダプターにデータが変更されたことを教えてあげる（通知する）
         mAdapter.notifyDataSetChanged();
