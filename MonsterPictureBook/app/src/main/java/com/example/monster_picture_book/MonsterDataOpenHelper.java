@@ -11,10 +11,10 @@ public class MonsterDataOpenHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "monsterDB.db";
     private static final int DATABASE_VERSION = 1;
 
-    public static final String TABLE_NAME = "monsterdb";
-    public static final String _ID = "_id";
-    public static final String COLUMN_NO = "monster_no";
-    public static final String COLUMN_NAME = "monster_name";
+    static final String TABLE_NAME = "monsterdb";
+    static final String _ID = "_id";
+    static final String COLUMN_NO = "monster_no";
+    static final String COLUMN_NAME = "monster_name";
 
     private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
             _ID + " INTEGER PRIMARY KEY, " +
@@ -27,7 +27,7 @@ public class MonsterDataOpenHelper extends SQLiteOpenHelper {
             "(10, '010', 'バブルスライム')";
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
-    public MonsterDataOpenHelper(@Nullable Context context) {
+    MonsterDataOpenHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

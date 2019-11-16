@@ -8,7 +8,7 @@ public class MonsterDataItem {
     private String no;
     private String name;
 
-    public MonsterDataItem(int id, String no, String name) {
+    MonsterDataItem(int id, String no, String name) {
         this.id = id;
         this.no = no;
         this.name = name;
@@ -44,3 +44,4 @@ public class MonsterDataItem {
         return this.id + ", " + this.no + ", " + this.name;
     }
 }
+
