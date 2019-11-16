@@ -93,31 +93,38 @@ public class MainActivity extends AppCompatActivity {
     private void displayDataList() {
         // 1.アダプター内のデータをリセットする（クリアにする）
         mAdapter.clear();
+
+        // 2.表示に使うデータを入れるリスト
         List<TitleDataItem> itemList = new ArrayList<>();
-        SQLiteDatabase db = new ITPMDataOpenHelper(this).getReadableDatabase();
-        db.beginTransaction();
-        try (Cursor cursor = db.query(ITPMDataOpenHelper.TABLE_NAME,
+
+        // 3.読み書き用のデータベースインスタンスを取得する
+        SQLiteDatabase db = new ITPMDataOpenHelper(this).getWritableDatabase();
+
+        // 4.データベースから欲しいデータのカーソルを取り出す処理
+        Cursor cursor = db.query(
+                ITPMDataOpenHelper.TABLE_NAME,
                 null,
                 null,
                 null,
                 null,
                 null,
-                null))
-        {
-            while (cursor.moveToNext()) {
-                int id = cursor.getInt(cursor.getColumnIndex(ITPMDataOpenHelper._ID));
-                String title = cursor.getString(cursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
-                TitleDataItem item = new TitleDataItem(id, title);
-                itemList.add(item);
-            }
-         } finally {
-            db.endTransaction();
+                null
+        );
+
+        // 5.カーソルを使ってデータを取り出す処理
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(cursor.getColumnIndex(ITPMDataOpenHelper._ID));
+            String title = cursor.getString(cursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
+            itemList.add(new TitleDataItem(id, title));
         }
 
-        // 2.新しいデータをアダプターに設定する（セットする）
+        // 6.カーソルを閉じる
+        cursor.close();
+
+        // 7.新しいデータをアダプターに設定する（セットする）
         mAdapter.addAll(itemList);
 
-        // 3.アダプターにデータが変更されたことを教えてあげる（通知する）
+        // 8.アダプターにデータが変更されたことを教えてあげる（通知する）
         mAdapter.notifyDataSetChanged();
     }
 
