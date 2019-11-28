@@ -93,6 +93,13 @@ public class MainActivity extends AppCompatActivity {
     private void displayDataList() {
         // 1.アダプター内のデータをリセットする（クリアにする）
         mAdapter.clear();
+//        List<TitleDataItem> itemList = Arrays.asList(
+//            new TitleDataItem(1, "ホーム"),
+//            new TitleDataItem(2, "事業内容"),
+//            new TitleDataItem(3, "企業情報"),
+//            new TitleDataItem(4, "採用情報"),
+//            new TitleDataItem(5, "お問い合わせ")
+//        );
 
         // 2.表示に使うデータを入れるリスト
         List<TitleDataItem> itemList = new ArrayList<>();
@@ -121,10 +128,13 @@ public class MainActivity extends AppCompatActivity {
         // 6.カーソルを閉じる
         cursor.close();
 
-        // 7.新しいデータをアダプターに設定する（セットする）
+        // 7.データベースを閉じる
+        db.close();
+
+        // 8.新しいデータをアダプターに設定する（セットする）
         mAdapter.addAll(itemList);
 
-        // 8.アダプターにデータが変更されたことを教えてあげる（通知する）
+        // 9.アダプターにデータが変更されたことを教えてあげる（通知する）
         mAdapter.notifyDataSetChanged();
     }
 
