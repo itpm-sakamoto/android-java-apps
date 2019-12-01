@@ -10,9 +10,11 @@ import com.example.itpmapp.databases.ITPMDataOpenHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -21,8 +23,10 @@ import com.example.itpmapp.R;
 
 public class EditActivity extends AppCompatActivity {
 
+    private static final String KEY_ID = "key_id";
     private static final String KEY_TITLE = "key_title";
     private EditText mTitleEditText;
+    private int selectId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +36,16 @@ public class EditActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mTitleEditText = findViewById(R.id.title_edit_text);
+
+        selectId = getIntent().getIntExtra(KEY_ID, -1);
+
+        ActionBar actionBar = getSupportActionBar();
+
+        if (selectId == -1 && actionBar != null) {
+            actionBar.setTitle(R.string.a_new);
+        } else {
+            actionBar.setTitle(R.string.edit);
+        }
 
         String title = getIntent().getStringExtra(KEY_TITLE);
         if (title != null) {
@@ -56,29 +70,30 @@ public class EditActivity extends AppCompatActivity {
                     toast.show();
                 } else {
                     // タイトルが入力されている場合
-                    // データベースに新規のデータを追加する。
-                    // 1. ContentValuesのインスタンスに追加したいデータを入れる。
                     ContentValues contentValues = new ContentValues();
-                    contentValues.put(ITPMDataOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
-
-                    // 2. SQLiteDatabaseのインスタンスを用意する。
                     SQLiteDatabase db = new ITPMDataOpenHelper(EditActivity.this).getWritableDatabase();
-
-                    // 3. SQLiteDatabaseインスタンスの「insert」メソッドを利用して、
-                    //          ContentValuesのデータをデータベースに追加する。
-                    db.insert(ITPMDataOpenHelper.TABLE_NAME, null, contentValues);
-
-                    // 4. データベースを閉じる。
+                    if (selectId == -1) {
+                        contentValues.put(ITPMDataOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
+                        db.insert(ITPMDataOpenHelper.TABLE_NAME, null, contentValues);
+                    } else {
+                        contentValues.put(ITPMDataOpenHelper._ID, selectId);
+                        contentValues.put(ITPMDataOpenHelper.COLUMN_TITLE, mTitleEditText.getText().toString());
+                        db.update(ITPMDataOpenHelper.TABLE_NAME,
+                                contentValues,
+                                ITPMDataOpenHelper._ID + "=" + selectId,
+                                null
+                        );
+                    }
                     db.close();
-
                     finish();
                 }
             }
         });
     }
 
-    public static Intent createIntent(Context context, String title) {
+    public static Intent createIntent(Context context, int id, String title) {
         Intent intent = new Intent(context, EditActivity.class);
+        intent.putExtra(KEY_ID, id);
         intent.putExtra(KEY_TITLE, title);
         return intent;
     }
