@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
+                countTask.cancelTask();
                 textView.setText(String.valueOf(0));
             }
         });

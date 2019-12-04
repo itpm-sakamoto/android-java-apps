@@ -1,11 +1,14 @@
 package com.example.asynchronousexecution;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 public class CountTask extends AsyncTask<Integer, Integer, Integer> {
 
     private Listener listener;
+
+    void setListener(Listener listener) {
+        this.listener = listener;
+    }
 
     interface Listener {
         void onSuccess(int count);
@@ -16,6 +19,9 @@ public class CountTask extends AsyncTask<Integer, Integer, Integer> {
     protected Integer doInBackground(Integer... params) {
         // 10秒数える処理
         do {
+            if (isCancelled()) {
+                return 0;
+            }
             try {
                 // 1秒間スリープさせる
                 Thread.sleep(1000);
@@ -47,7 +53,7 @@ public class CountTask extends AsyncTask<Integer, Integer, Integer> {
         }
     }
 
-    void setListener(Listener listener) {
-        this.listener = listener;
+    void cancelTask() {
+        this.cancel(true);
     }
 }
