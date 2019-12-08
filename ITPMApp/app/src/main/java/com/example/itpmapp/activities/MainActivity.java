@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.example.itpmapp.R;
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 // 3. データベースを閉じる
                 db.close();
                 // 4. 画面表示を更新する
-                displayDataList();
+                new AllDataLoadTask().execute();
                 Toast.makeText(MainActivity.this, item.getTitle() + "を削除しました。", Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -91,57 +92,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        displayDataList();
+        new AllDataLoadTask().execute();
     }
 
     /**
      * リスト表示用メソッド
      */
-    private void displayDataList() {
-        // 1.アダプター内のデータをリセットする（クリアにする）
+    private void displayDataList(List<TitleDataItem> titleDataItems) {
+        // アダプター内のデータをリセットする（クリアにする）
         mAdapter.clear();
-//        List<TitleDataItem> itemList = Arrays.asList(
-//            new TitleDataItem(1, "ホーム"),
-//            new TitleDataItem(2, "事業内容"),
-//            new TitleDataItem(3, "企業情報"),
-//            new TitleDataItem(4, "採用情報"),
-//            new TitleDataItem(5, "お問い合わせ")
-//        );
 
-        // 2.表示に使うデータを入れるリスト
-        List<TitleDataItem> itemList = new ArrayList<>();
+        // 新しいデータをアダプターに設定する（セットする）
+        mAdapter.addAll(titleDataItems);
 
-        // 3.読み書き用のデータベースインスタンスを取得する
-        SQLiteDatabase db = new ITPMDataOpenHelper(this).getWritableDatabase();
-
-        // 4.データベースから欲しいデータのカーソルを取り出す処理
-        Cursor cursor = db.query(
-                ITPMDataOpenHelper.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        // 5.カーソルを使ってデータを取り出す処理
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(cursor.getColumnIndex(ITPMDataOpenHelper._ID));
-            String title = cursor.getString(cursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
-            itemList.add(new TitleDataItem(id, title));
-        }
-
-        // 6.カーソルを閉じる
-        cursor.close();
-
-        // 7.データベースを閉じる
-        db.close();
-
-        // 8.新しいデータをアダプターに設定する（セットする）
-        mAdapter.addAll(itemList);
-
-        // 9.アダプターにデータが変更されたことを教えてあげる（通知する）
+        // アダプターにデータが変更されたことを教えてあげる（通知する）
         mAdapter.notifyDataSetChanged();
     }
 
@@ -184,6 +148,49 @@ public class MainActivity extends AppCompatActivity {
             titleTextView.setText(item.getTitle());
 
             return convertView;
+        }
+    }
+
+    private class AllDataLoadTask extends AsyncTask<Void, Void, List<TitleDataItem>> {
+
+        @Override
+        protected List<TitleDataItem> doInBackground(Void... voids) {
+            // 表示に使うデータを入れるリスト
+            List<TitleDataItem> itemList = new ArrayList<>();
+
+            // 読み書き用のデータベースインスタンスを取得する
+            SQLiteDatabase db = new ITPMDataOpenHelper(MainActivity.this).getWritableDatabase();
+
+            // データベースから欲しいデータのカーソルを取り出す処理
+            Cursor cursor = db.query(
+                    ITPMDataOpenHelper.TABLE_NAME,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            // カーソルを使ってデータを取り出す処理
+            while (cursor.moveToNext()) {
+                int id = cursor.getInt(cursor.getColumnIndex(ITPMDataOpenHelper._ID));
+                String title = cursor.getString(cursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
+                itemList.add(new TitleDataItem(id, title));
+            }
+
+            // カーソルを閉じる
+            cursor.close();
+
+            // データベースを閉じる
+            db.close();
+            return itemList;
+        }
+
+        @Override
+        protected void onPostExecute(List<TitleDataItem> titleDataItems) {
+            // 画面表示の更新
+            displayDataList(titleDataItems);
         }
     }
 }
